@@ -8,8 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:redux/redux.dart';
 
 class ShopDataAPICall {
-  static getShopData(Store store) async {
-    PostRequestModel postRequestModel = PostRequestModel(page: 1, perPage: 10);
+  static getShopData(Store store, int page) async {
+    PostRequestModel postRequestModel =
+        PostRequestModel(page: 1, perPage: page);
 
     var body = jsonEncode(postRequestModel);
     await http
@@ -26,10 +27,10 @@ class ShopDataAPICall {
       if (response.statusCode == 200 || response.statusCode == 201) {
         var json = jsonDecode(response.body);
         ShopModel data = ShopModel.fromJson(json);
+
         store.dispatch(ShopAction(data));
       }
     }).catchError((e) {
-      print("Test");
       print("$e");
     });
   }

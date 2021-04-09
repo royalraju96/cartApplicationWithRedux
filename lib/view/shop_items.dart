@@ -1,11 +1,25 @@
+import 'package:cart_application/controller/APICall.dart';
 import 'package:cart_application/controller/CartController.dart';
+import 'package:cart_application/controller/Database.dart';
 import 'package:cart_application/redux/state/app_state.dart';
 import 'package:cart_application/view/check_out.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
-class ShopItem extends StatelessWidget {
+class ShopItem extends StatefulWidget {
+  @override
+  _ShopItemState createState() => _ShopItemState();
+}
+
+class _ShopItemState extends State<ShopItem> {
+  final ScrollController _scrollController = ScrollController();
+  int pageNumber = 10;
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,11 +53,25 @@ class ShopItem extends StatelessWidget {
           ),
           SliverFillRemaining(
             child: StoreConnector<AppState, Store>(
+                onInit: (store) {
+                  ShopDataAPICall.getShopData(store, pageNumber);
+                  DbProvider.db.database;
+                  _scrollController.addListener(() {
+                    if (_scrollController.position.pixels ==
+                        _scrollController.position.maxScrollExtent) {
+                      ShopDataAPICall.getShopData(store, ++pageNumber + 4);
+                    }
+                  });
+                },
+                onDispose: (store) {
+                  _scrollController.dispose();
+                },
                 converter: (store) => store,
                 builder: (context, store) {
                   AppState appState = store.state;
                   if (appState?.rxShopModel?.data != null) {
                     return ListView.builder(
+                      controller: _scrollController,
                       itemCount: appState.rxShopModel.data.length,
                       itemBuilder: (BuildContext context, int index) {
                         var value = appState.rxShopModel.data;
